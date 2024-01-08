@@ -1,4 +1,4 @@
-Plot Histograms of Signal & MC for the signal/background discriminator for the CMS $HH \rightarrow \mathrm{X} \rightarrow bb\tau\tau$ Analysis.
+Plot Histograms of Signal & MC for the signal/background discriminator for the CMS $HH \rightarrow \mathrm{X} \rightarrow b\overline{b}\tau^-\tau^+$ Analysis.
 
 Tested with LCG 105. 
 
