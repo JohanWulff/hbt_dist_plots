@@ -1,0 +1,8 @@
+.htaccess
+*.pdf
+*.png
+*.ipynb
+*.php
+*.npz
+__pycache__
+./*/
