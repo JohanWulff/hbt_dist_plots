@@ -12,7 +12,7 @@ source  /cvmfs/sft.cern.ch/lcg/views/LCG_105/x86_64-el9-clang16-opt/setup.sh
 
 ```
 python plot_dists.py -m serial_baseline_param \
-                     -i /eos/user/j/jowulff/sample/dir/to/cards/flats10_test_serial_baseline_param/flats10_qcd/ \
+                     -i /some/dir/to/cards/like/flats10_test_serial_baseline_param/flats10_qcd/ \
                      -o ./some/dir/for/output/plots
 
 ```
