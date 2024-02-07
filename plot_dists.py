@@ -13,6 +13,8 @@ from hist import Hist
 
 import matplotlib.pyplot as plt
 import mplhep as hep
+
+from typing import List, Union
 plt.style.use(hep.style.CMS)
 
 
@@ -104,8 +106,11 @@ def plot_double_dist(mc_stack, sig, lim, exclusion_idx, title, savename):
     else:
         ax_1.set_title(f"Excluding first {exclusion_idx} bins")
     mc_stack.plot(stack=True, histtype='fill', ax=ax_1)
-    sig = (sig/sig.sum().value)*lim
-    sig.plot1d(label=f'sig. norm. to limit: {lim:.1f} fb', color='black', ax=ax_1)
+    if lim != 1:
+        sig = (sig/sig.sum().value)*lim
+        sig.plot1d(label=f'sig. norm. to limit: {lim:.1f} fb', color='black', ax=ax_1)
+    else:
+        sig.plot1d(label='sig.', color='black', ax=ax_1)
     ax_1.set_yscale('log')
     ax_1.set_ylabel('')
     ax_1.set_xlabel('DNN Out')
@@ -113,11 +118,15 @@ def plot_double_dist(mc_stack, sig, lim, exclusion_idx, title, savename):
     plt.savefig(savename, bbox_extra_artists=(lgd,), bbox_inches='tight', pad_inches=0.8)
     plt.close()
 
+
 def plot_single_dist(mc_stack, sig, lim, title, savename):
     mc_stack.plot(stack=True, histtype='fill')
-    sig = sig/sig.sum().value
-    sig = sig*lim
-    sig.plot1d(label=f'sig. norm. to limit {lim:.1f} fb', color='black')
+    if lim != 1:
+        sig = sig/sig.sum().value
+        sig = sig*lim
+        sig.plot1d(label=f'sig. norm. to limit {lim:.1f} fb', color='black')
+    else:
+        sig.plot1d(label='sig.', color='black')
     plt.yscale('log')
     lgd = plt.legend(bbox_to_anchor=(1.06, 1.02))
     plt.ylabel("N")
@@ -127,7 +136,11 @@ def plot_single_dist(mc_stack, sig, lim, title, savename):
     plt.close()
 
 
-def main(model_name, input_dir, output_dir):
+def main(input_dir: str,
+         model_name: Union[str, None] = None, 
+         output_dir: Union[str, None] = None): 
+    if model_name is None:
+        normalise_signal = False
     if output_dir == "":
         output_dir = f"./{Path(input_dir).parent.stem}"
     if not os.path.exists(output_dir):
@@ -145,17 +158,29 @@ def main(model_name, input_dir, output_dir):
         dirname = f"cat_{year}_{channel}_{cat}_{sign}_{isolation}"
         signal_name = f"ggf_spin_{spin}_mass_{mass}_hbbhtt"
         stack, sig = load_hists(filename, dirname, signal_name)
-        limits_file= f'./reslimits_{model_name}_{year}.npz'
-        lim = load_reslim(limits_file, mass)
-        title = f"{model_name.replace('_', '-')}, cat: {cat}, spin: {spin} mass: {mass}"
+        if normalise_signal:
+            limits_file= f'./reslimits_{model_name}_{year}.npz'
+            lim = load_reslim(limits_file, mass)
+        if not model_name is None:
+            title = f"{model_name.replace('_', '-')}, cat: {cat}, spin: {spin} mass: {mass}"
+        else:
+            title = f"cat: {cat}, spin: {spin} mass: {mass}"
         widths = stack.axes.widths[0]
         exclusion_idx = get_exclusion_idx(widths)
         if exclusion_idx == -1:
-            plot_single_dist(stack, sig, lim, title, f"{output_dir}/{filename.stem}.png")
+            if normalise_signal:
+                plot_single_dist(stack, sig, lim, title, f"{output_dir}/{filename.stem}.png")
+            else:
+                plot_single_dist(stack, sig, 1, title, f"{output_dir}/{filename.stem}.png")
         else:
-            plot_double_dist(stack,sig, lim,
-                             exclusion_idx,
-                             title, f"{output_dir}/{filename.stem}.png")
+            if normalise_signal:
+                plot_double_dist(stack,sig, lim,
+                                exclusion_idx,
+                                title, f"{output_dir}/{filename.stem}.png")
+            else:
+                plot_double_dist(stack,sig, 1,
+                                exclusion_idx,
+                                title, f"{output_dir}/{filename.stem}.png")
 
 
 if __name__ == "__main__":
